@@ -17,7 +17,7 @@ class Borrowing(models.Model):
     )
     borrowed_at = models.DateTimeField(auto_now_add=True)
     expected_return = models.DateTimeField()
-    actual_return = models.DateTimeField(null=True)
+    actual_return = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.book} borrowed by {self.user}"

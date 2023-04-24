@@ -1,12 +1,13 @@
-import datetime
-
 from django.db import transaction
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer, BorrowReturnSerializer
+from borrowings.serializers import BorrowingSerializer, BorrowReturnSerializer, \
+    BorrowingCreateSerializer
 
 
 class BorrowingViewSet(
@@ -16,17 +17,23 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = BorrowingSerializer
+    queryset = Borrowing.objects.all()
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Borrowing.objects.all().select_related("book")
-        return Borrowing.objects.filter(user=self.request.user.id).select_related(
+            return self.queryset
+        return Borrowing.objects.filter(user=self.request.user).select_related(
             "book"
         )
 
     def get_serializer_class(self):
         if self.action == "return_borrow":
             return BorrowReturnSerializer
+        if self.action == "create":
+            return BorrowingCreateSerializer
+
         return BorrowingSerializer
 
     def perform_create(self, serializer):
@@ -43,7 +50,8 @@ class BorrowingViewSet(
                 serializer.save()
                 borrow.book.inventory += 1
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {"message": f"{borrow.user.email} already returned this borrow"},
             status=status.HTTP_400_BAD_REQUEST,

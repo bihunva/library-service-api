@@ -39,12 +39,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+
     "users",
     "books",
     "borrowings",
     "payments",
     "notifications",
-    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -134,8 +134,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    )
 }
 
 SIMPLE_JWT = {
@@ -144,16 +143,3 @@ SIMPLE_JWT = {
 }
 
 SJWT_AUTH_HEADER_NAME = "HTTP_AUTHORIZE"
-
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "Library Settings API",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-    "SWAGGER_UI_SETTINGS": {
-        "deepLinking": True,
-        "defaultModelRendering": "model",
-        "defaultModelsExpandDepth": 2,
-        "defaultModelExpandDepth": 2,
-    },
-}

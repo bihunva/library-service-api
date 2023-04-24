@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "borrowings",
     "payments",
     "notifications",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

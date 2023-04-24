@@ -20,7 +20,9 @@ class BorrowingViewSet(
     def get_queryset(self):
         if self.request.user.is_staff:
             return Borrowing.objects.all().select_related("book")
-        return Borrowing.objects.filter(user=self.request.user.id).select_related("book")
+        return Borrowing.objects.filter(user=self.request.user.id).select_related(
+            "book"
+        )
 
     def get_serializer_class(self):
         if self.action == "return_borrow":

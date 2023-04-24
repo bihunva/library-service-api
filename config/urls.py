@@ -25,10 +25,8 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/users/", include("users.urls", namespace="users")),
-    path(
-        "api/borrowings/",
-        include("borrowings.urls", namespace="borrowings")
-    ),
+    path("api/borrowings/", include("borrowings.urls", namespace="borrowings")),
+    path("api/books/", include("books.urls", namespace="books")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/doc/swagger/",
@@ -40,5 +38,4 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("api/payments/", include("payments.urls", namespace="payments")),
 ]

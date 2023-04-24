@@ -13,4 +13,4 @@ class IsAdminOrReadOnly(permissions.BasePermission):
             return True
 
         # Write permissions are only allowed to admin
-        return request.user
+        return request.user.is_staff

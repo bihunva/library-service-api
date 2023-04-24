@@ -28,6 +28,7 @@ urlpatterns = [
     path(
         "api/borrowings/",
         include("borrowings.urls", namespace="borrowings")
+    ),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/doc/swagger/",
@@ -39,4 +40,5 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    path("api/payments/", include("payments.urls", namespace="payments")),
 ]

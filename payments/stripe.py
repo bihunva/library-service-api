@@ -16,10 +16,10 @@ def stripe_session(
         end_date: date,
         is_ok: bool,
 ) -> stripe.checkout.Session:
-    have_to_pay = (end_date - start_date).days * borrowing.book.daily_fee
+    money_to_pay = (end_date - start_date).days * borrowing.book.daily_fee
     product = ""
     if is_ok:
-        have_to_pay *= 2
+        money_to_pay *= 2
         product = "free "
 
     url = url.rsplit("/", 2)[0] + "/borrowings/" + str(borrowing.id)
@@ -28,7 +28,7 @@ def stripe_session(
             {
                 "price_data": {
                     "currency": "usd",
-                    "amount": int(have_to_pay * 100),
+                    "amount": int(money_to_pay * 100),
                     "product_data": {
                         "name": product + str(borrowing),
                     },

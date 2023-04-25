@@ -1,13 +1,10 @@
-from django.urls import include, path
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
 
 from payments.views import PaymentViewSet
 
-router = routers.DefaultRouter()
-router.register("payments", PaymentViewSet)
+router = DefaultRouter()
+router.register("", PaymentViewSet)
 
-urlpatterns = [
-    path("", include(router.urls)),
-]
+urlpatterns = router.urls
 
 app_name = "payments"

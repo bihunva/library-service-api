@@ -6,8 +6,11 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer, BorrowReturnSerializer, \
+from borrowings.serializers import (
+    BorrowingSerializer,
+    BorrowReturnSerializer,
     BorrowingCreateSerializer
+)
 
 
 class BorrowingViewSet(
@@ -17,16 +20,25 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = BorrowingSerializer
-    queryset = Borrowing.objects.all()
+    queryset = Borrowing.objects.all().select_related("book")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.request.user.is_staff:
-            return self.queryset
-        return Borrowing.objects.filter(user=self.request.user).select_related(
-            "book"
-        )
+        queryset = self.queryset
+        is_active = self.request.query_params.get("is_active")
+
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(user=self.request.user)
+
+        if is_active is not None:
+            match is_active:
+                case "False":
+                    queryset = queryset.filter(actual_return__isnull=False)
+                case "True":
+                    queryset = queryset.filter(actual_return__isnull=True)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "return_borrow":

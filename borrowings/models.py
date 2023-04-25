@@ -19,5 +19,9 @@ class Borrowing(models.Model):
     expected_return = models.DateTimeField()
     actual_return = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def is_active(self) -> bool:
+        return self.actual_return is None
+
     def __str__(self) -> str:
         return f"{self.book} borrowed by {self.user}"

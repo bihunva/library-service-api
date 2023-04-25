@@ -20,7 +20,7 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = BorrowingSerializer
-    queryset = Borrowing.objects.all().select_related("book")
+    queryset = Borrowing.objects.select_related("book")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 

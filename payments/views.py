@@ -1,11 +1,15 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
 
 
-class PaymentViewSet(viewsets.ModelViewSet):
+class PaymentViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Payment.objects.select_related("borrowing")
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]

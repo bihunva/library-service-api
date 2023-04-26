@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
@@ -57,3 +58,18 @@ class PaymentViewSet(
                     )
                 )
         return HttpResponseRedirect(payment.session_url)
+
+    @action(methods=["GET"], detail=True, url_path="cancel")
+    def cancel_payment(self, request, pk):
+        payment = Payment.objects.get(pk=pk)
+        session_id = payment.session_id
+
+        try:
+            stripe.checkout.Session.cancel(session_id)
+            payment.status = Payment.StatusChoices.PENDING
+            payment.save()
+            return Response({'message': 'Payment canceled successfully.'})
+        except stripe.error.InvalidRequestError as e:
+            return Response({'error': str(e)})
+
+

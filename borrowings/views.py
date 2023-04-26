@@ -5,6 +5,7 @@ from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from borrowings.models import Borrowing
@@ -63,7 +64,7 @@ class BorrowingViewSet(
         borrowing.payments.add(payment)
         borrowing.save()
         self.get_success_headers(serializer.data)
-        return HttpResponseRedirect(payment.session_url)
+        return HttpResponseRedirect(reverse("payments:payment-detail", kwargs={"pk": payment.id}))
 
     @action(methods=["POST"], detail=True, url_path="return")
     @transaction.atomic

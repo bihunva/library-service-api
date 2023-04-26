@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 import stripe
 from django.http import HttpResponseRedirect
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
@@ -57,3 +59,19 @@ class PaymentViewSet(
                     )
                 )
         return HttpResponseRedirect(payment.session_url)
+
+    @action(detail=True, methods=['GET'], url_path='cancel')
+    def cancel_payment(self, request, pk=None):
+        payment = self.get_object()
+
+        if payment.status == Payment.StatusChoices.PAID:
+            return Response({"detail": "Payment has already been paid."}, status=status.HTTP_400_BAD_REQUEST)
+        time_now = datetime.now()
+        time_limit = time_now + timedelta(hours=24)
+        message = f"Payment can be made until {time_limit.strftime('%Y-%m-%d %H:%M:%S')} (server time)."
+        return Response({"detail": message})
+
+
+
+
+

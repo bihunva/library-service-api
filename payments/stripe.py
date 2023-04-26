@@ -73,7 +73,7 @@ def create_stripe_session(borrowing, request):
         },
         mode="payment",
         success_url=url + "success/",
-        cancel_url=url + "cancel?session_id={checkout_session.id}",
+        cancel_url=url + "cancel/",
     )
 
     payment.session_url = session.url

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 import stripe
 from django.http import HttpResponseRedirect
@@ -59,17 +60,18 @@ class PaymentViewSet(
                 )
         return HttpResponseRedirect(payment.session_url)
 
-    @action(methods=["GET"], detail=True, url_path="cancel")
-    def cancel_payment(self, request, pk):
-        payment = Payment.objects.get(pk=pk)
-        session_id = payment.session_id
+    @action(detail=True, methods=['GET'], url_path='cancel')
+    def cancel_payment(self, request, pk=None):
+        payment = self.get_object()
 
-        try:
-            stripe.checkout.Session.cancel(session_id)
-            payment.status = Payment.StatusChoices.PENDING
-            payment.save()
-            return Response({'message': 'Payment canceled successfully.'})
-        except stripe.error.InvalidRequestError as e:
-            return Response({'error': str(e)})
+        if payment.status == Payment.StatusChoices.PAID:
+            return Response({"detail": "Payment has already been paid."}, status=status.HTTP_400_BAD_REQUEST)
+        time_now = datetime.now()
+        time_limit = time_now + timedelta(hours=24)
+        message = f"Payment can be made until {time_limit.strftime('%Y-%m-%d %H:%M:%S')} (server time)."
+        return Response({"detail": message})
+
+
+
 
 

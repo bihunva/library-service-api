@@ -20,7 +20,6 @@ class BorrowingSerializer(serializers.ModelSerializer):
 
 
 class BorrowingCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Borrowing
         fields = (
@@ -28,9 +27,9 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
             "book",
             "borrowed_at",
             "expected_return",
-            "actual_return"
+            "actual_return",
         )
-        read_only_fields = ("id", "borrowed_at", "actual_return")
+        # read_only_fields = ("id", "borrowed_at", "actual_return")
 
     def create(self, validated_data):
         book = validated_data.get("book")

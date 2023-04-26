@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -9,8 +11,9 @@ from borrowings.models import Borrowing
 from borrowings.serializers import (
     BorrowingSerializer,
     BorrowReturnSerializer,
-    BorrowingCreateSerializer
+    BorrowingCreateSerializer,
 )
+from payments.stripe import create_stripe_session
 
 
 class BorrowingViewSet(
@@ -51,6 +54,17 @@ class BorrowingViewSet(
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        borrowing = serializer.save()
+        payment = create_stripe_session(borrowing, self.request)
+        borrowing.payments.add(payment)
+        borrowing.save()
+        self.get_success_headers(serializer.data)
+        return HttpResponseRedirect(payment.session_url)
+
     @action(methods=["POST"], detail=True, url_path="return")
     @transaction.atomic
     def return_borrow(self, request, pk=None):
@@ -63,8 +77,9 @@ class BorrowingViewSet(
                 borrow.book.inventory += 1
                 borrow.book.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(
             {"message": f"{borrow.user.email} already returned this borrow"},
             status=status.HTTP_400_BAD_REQUEST,

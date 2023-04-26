@@ -23,12 +23,11 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = BorrowingSerializer
-    queryset = Borrowing.objects.select_related("book")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = Borrowing.objects.select_related("book")
         is_active = self.request.query_params.get("is_active")
 
         if not self.request.user.is_staff:
@@ -70,6 +69,7 @@ class BorrowingViewSet(
     def return_borrow(self, request, pk=None):
         now = timezone.now()
         borrow = self.get_object()
+
         if borrow.actual_return is None:
             borrow.actual_return = now
             borrow.save()
@@ -86,9 +86,7 @@ class BorrowingViewSet(
                     payment = create_stripe_session(borrow, self.request)
                     return HttpResponseRedirect(payment.session_url)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {"message": f"{borrow.user.email} already returned this borrow"},
             status=status.HTTP_400_BAD_REQUEST,

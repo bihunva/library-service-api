@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -68,14 +68,23 @@ class BorrowingViewSet(
     @action(methods=["POST"], detail=True, url_path="return")
     @transaction.atomic
     def return_borrow(self, request, pk=None):
+        now = timezone.now()
         borrow = self.get_object()
-        serializer = self.get_serializer(borrow, data=request.data)
-
         if borrow.actual_return is None:
+            borrow.actual_return = now
+            borrow.save()
+            serializer = self.get_serializer(borrow, data=request.data)
+            payment = borrow.payments.first()
+
             if serializer.is_valid():
                 serializer.save()
                 borrow.book.inventory += 1
                 borrow.book.save()
+                if payment.status == "PENDING" or (
+                    payment.status == "PAID" and now > borrow.expected_return
+                ):
+                    payment = create_stripe_session(borrow, self.request)
+                    return HttpResponseRedirect(payment.session_url)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST

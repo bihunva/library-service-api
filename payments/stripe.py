@@ -1,12 +1,16 @@
 import stripe
+import os
 
 from django.urls import reverse
 from django.utils import timezone
-from django.conf import settings
 
 from payments.models import Payment
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+from dotenv import load_dotenv
+
+load_dotenv()  # load variables from the .env file
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 def create_stripe_session(borrowing, request):

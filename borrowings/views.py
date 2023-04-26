@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +10,7 @@ from borrowings.models import Borrowing
 from borrowings.serializers import (
     BorrowingSerializer,
     BorrowReturnSerializer,
-    BorrowingCreateSerializer
+    BorrowingCreateSerializer,
 )
 
 
@@ -20,12 +21,11 @@ class BorrowingViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = BorrowingSerializer
-    queryset = Borrowing.objects.select_related("book")
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = self.queryset
+        queryset = Borrowing.objects.select_related("book")
         is_active = self.request.query_params.get("is_active")
 
         if not self.request.user.is_staff:
@@ -54,17 +54,19 @@ class BorrowingViewSet(
     @action(methods=["POST"], detail=True, url_path="return")
     @transaction.atomic
     def return_borrow(self, request, pk=None):
+        now = timezone.now()
         borrow = self.get_object()
-        serializer = self.get_serializer(borrow, data=request.data)
 
         if borrow.actual_return is None:
+            borrow.actual_return = now
+            borrow.save()
+            serializer = self.get_serializer(borrow, data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 borrow.book.inventory += 1
                 borrow.book.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {"message": f"{borrow.user.email} already returned this borrow"},
             status=status.HTTP_400_BAD_REQUEST,

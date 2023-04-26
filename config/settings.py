@@ -9,8 +9,14 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
 from datetime import timedelta
 from pathlib import Path
+
+from celery.schedules import crontab
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -156,5 +162,15 @@ SPECTACULAR_SETTINGS = {
         "defaultModelRendering": "model",
         "defaultModelsExpandDepth": 2,
         "defaultModelExpandDepth": 2,
+    },
+}
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+CELERY_TIMEZONE = "UTC"
+CELERY_BEAT_SCHEDULE = {
+    "send_notifications": {
+        "task": "notifications.tasks.send_overdue_borrowing_notifications",
+        "schedule": crontab(hour=9, minute=0),
     },
 }

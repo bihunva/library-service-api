@@ -1,16 +1,20 @@
+import os
+
 import stripe
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from dotenv import load_dotenv
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from config import settings
 
 from payments.models import Payment
 from payments.serializers import PaymentSerializer
 
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+load_dotenv()  # load variables from the .env file
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 class PaymentViewSet(
@@ -33,7 +37,6 @@ class PaymentViewSet(
     @action(methods=["GET"], detail=True, url_path="success")
     def success(self, request, pk):
         payment = Payment.objects.get(pk=pk)
-        stripe.api_key = settings.STRIPE_SECRET_KEY
         session_id = payment.session_id
         events = stripe.Event.list(type="checkout.session.completed")
         filtered_events = [

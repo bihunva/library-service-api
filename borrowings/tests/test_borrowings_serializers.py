@@ -52,13 +52,13 @@ class BorrowingCreateSerializerTestCase(TestCase):
             inventory=0,
             daily_fee=1.0,
         )
-        data = {
-            "book": book.id,
-            "expected_return": "2023-05-01T00:00:00Z"
-        }
+        data = {"book": book.id, "expected_return": "2023-05-01T00:00:00Z"}
         serializer = BorrowingCreateSerializer(data=data)
         serializer.is_valid(raise_exception=True)
 
-        # Verify that the book inventory was not decreased
+        with self.assertRaises(ValidationError) as context:
+            serializer.save(user=self.user1)
+            serializer.is_valid(raise_exception=True)
         book.refresh_from_db()
         self.assertEqual(book.inventory, 0)
+        self.assertEqual(context.exception.detail, {"error": "Book is out of stock."})

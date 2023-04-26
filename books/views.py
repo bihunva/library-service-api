@@ -5,12 +5,13 @@ from books.models import Book
 from books.serializers import BookSerializer
 
 from books.permissions import IsAdminOrReadOnly
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class BookViewSet(ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-
+    authentication_classes = [JWTAuthentication]
     permission_classes = (IsAdminOrReadOnly,)
 
     def get_permissions(self):

@@ -32,7 +32,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("inventory", models.PositiveIntegerField()),
-                ("daily_fee", models.DecimalField(decimal_places=2, max_digits=6)),
+                (
+                    "daily_fee",
+                    models.DecimalField(decimal_places=2, max_digits=6),
+                ),
             ],
         ),
     ]

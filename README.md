@@ -27,7 +27,7 @@ ___
 
 <p><i>The project can be installed locally or using Docker</i></p>
 
-##### Installation using Docker
+#### Installation using Docker
 
 <p>Before you begin, make sure you have Docker installed on your computer. To do this, run the following command:</p>
 
@@ -56,7 +56,7 @@ docker --version
    docker-compose up
    ```
 
-##### Local installation
+#### Local installation
 
 <p>Before you begin, make sure you have Python and PostgreSQL installed on your computer. To do this, run the following commands:</p>
 

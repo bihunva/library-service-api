@@ -8,7 +8,7 @@ from payments.models import Payment
 
 from dotenv import load_dotenv
 
-load_dotenv()  # load variables from the .env file
+load_dotenv()
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 FINE_MULTIPLAYER = 2
@@ -24,6 +24,7 @@ def create_stripe_session(borrowing, request):
     else:
         type_payment = Payment.TypeChoices.FINE
         money_pending = 0
+
         payment_expired = borrowing.payments.first()
         if payment_expired.status == "PENDING":
             money_pending = (
